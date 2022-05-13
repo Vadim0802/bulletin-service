@@ -1,0 +1,24 @@
+{
+    "name": "bodianskii/bulletin-service",
+    "autoload": {
+        "psr-4": {
+            "Bodianskii\\BulletinService\\": "src/"
+        },
+        "files": [
+            "src/Routes/api.php"
+        ]
+    },
+    "authors": [
+        {
+            "name": "Vadim0802",
+            "email": "v.bodyansky@yandex.ru"
+        }
+    ],
+    "require": {
+        "league/route": "^5.1",
+        "laminas/laminas-diactoros": "^2.10",
+        "laminas/laminas-httphandlerrunner": "^2.1",
+        "illuminate/database": "^9.12",
+        "vlucas/phpdotenv": "^5.4"
+    }
+}
