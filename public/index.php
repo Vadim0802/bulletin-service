@@ -1,10 +1,15 @@
 <?php
 
+use Bodianskii\BulletinService\Kernel\RequestHandler;
+use Laminas\HttpHandlerRunner\Emitter\SapiEmitter;
+use League\Route\Router;
+use function Bodianskii\BulletinService\Routes\defineRoutes;
+
 require_once __DIR__ . '/../app.php';
 
-$router = new \League\Route\Router();
-\Bodianskii\BulletinService\Routes\defineRoutes($router);
+$router = new Router();
+defineRoutes($router);
 
-$requestHandler = new \Bodianskii\BulletinService\Kernel\RequestHandler($router);
+$requestHandler = new RequestHandler($router);
 $response = $requestHandler->handle();
-(new Laminas\HttpHandlerRunner\Emitter\SapiEmitter)->emit($response);
+(new SapiEmitter())->emit($response);

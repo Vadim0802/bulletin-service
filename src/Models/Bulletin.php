@@ -16,7 +16,7 @@ class Bulletin extends Model
         'created_at' => 'datetime'
     ];
 
-    public function pictures()
+    public function images()
     {
         return $this->hasMany(Image::class);
     }

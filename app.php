@@ -1,13 +1,15 @@
 <?php
 
-use League\Route\Router;
+use Bodianskii\BulletinService\Commands\CommandHandler;
+use Bodianskii\BulletinService\Database\DatabaseManager;
+use Dotenv\Dotenv;
 
 require_once __DIR__ . "/vendor/autoload.php";
 
-$dotenv = \Dotenv\Dotenv::createImmutable(__DIR__);
+$dotenv = Dotenv::createImmutable(__DIR__);
 $dotenv->safeLoad();
 
-\Bodianskii\BulletinService\Database\DatabaseManager::initial();
+DatabaseManager::initial();
 
-$commandHandler = new \Bodianskii\BulletinService\Commands\CommandHandler();
+$commandHandler = new CommandHandler();
 $commandHandler->handle($argv[1]);
