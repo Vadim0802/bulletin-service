@@ -2,31 +2,32 @@
 
 namespace Bodianskii\BulletinService\Utils;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 
 class Paginator
 {
-    private int $currentPage;
     private int $perPage;
-    private string $model;
+    private int $totalCount;
+    private int $currentPage;
 
-    public function __construct(?int $page, string $model, int $perPage = 10)
+    public function __construct(?int $page, int $totalCount, int $perPage = 10)
     {
-        $this->currentPage = $page ?? 0;
         $this->perPage = $perPage;
-        $this->model = $model;
+        $this->totalCount = $totalCount;
+        $this->currentPage = $page ?? 0;
     }
 
-    public function paginate(): Collection
+    public function paginate(Builder $query): Collection
     {
         $offset = $this->currentPage * $this->perPage - $this->perPage;
-        return $this->model::query()->offset($offset)->limit($this->perPage)->get();
+        return $query->offset($offset)->limit($this->perPage)->get();
     }
 
     public function meta(): Collection
     {
         $hasNext = $this->hasNextPage();
-        $hasPrev = $this->hasPrevPage();
+        $hasPrev = $this->hasPreviousPage();
 
         return collect([
             'page' => $this->currentPage,
@@ -38,11 +39,11 @@ class Paginator
     private function hasNextPage()
     {
         $offset = ($this->currentPage + 1) * $this->perPage - $this->perPage;
-        return empty($this->model::query()->offset($offset)->limit(1)->get());
+        return $offset < $this->totalCount;
     }
 
-    private function hasPrevPage()
+    private function hasPreviousPage()
     {
-        return $this->currentPage !== 0;
+        return $this->currentPage !== 1;
     }
 }

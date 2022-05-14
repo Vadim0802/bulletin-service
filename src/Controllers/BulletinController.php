@@ -3,6 +3,7 @@
 namespace Bodianskii\BulletinService\Controllers;
 
 use Bodianskii\BulletinService\Models\Bulletin;
+use Bodianskii\BulletinService\Resources\BulletinResourceCollection;
 use Bodianskii\BulletinService\Utils\Paginator;
 use Laminas\Diactoros\Response;
 use Psr\Http\Message\ResponseInterface;
@@ -10,35 +11,38 @@ use Psr\Http\Message\ServerRequestInterface;
 
 class BulletinController
 {
-    public static function index(ServerRequestInterface $request): ResponseInterface
+    public function index(ServerRequestInterface $request): ResponseInterface
     {
-        $params = $request->getQueryParams();
+        $defaultQueryParams = [
+            'page' => 1,
+            'sort' => [
+                'field' => 'id',
+                'direction' => 'asc'
+            ]
+        ];
 
-        $paginator = new Paginator($params['page'], Bulletin::class);
+        [
+            'page' => $page,
+            'sort' => $sort
+        ] = array_merge($defaultQueryParams, $request->getQueryParams());
 
-        $bulletins = $paginator->paginate()->map(fn ($bulletin) => [
-            'id' => $bulletin->id,
-            'title' => $bulletin->title,
-            'price' => $bulletin->price,
-            'picture' => $bulletin->images->first()->only('path')
-        ]);
+        $paginator = new Paginator($page, Bulletin::query()->count());
 
-        $json = collect([
-            'data' => $bulletins,
-            'meta' => $paginator->meta()
-        ]);
+        $bulletins = Bulletin::query()->orderBy($sort['field'], $sort['direction']);
+        $bulletinsResource = new BulletinResourceCollection($paginator->paginate($bulletins));
+        $bulletinsResource->insertMetaData($paginator->meta());
 
         $response = new Response();
-        $response->getBody()->write($json->toJson());
+        $response->getBody()->write($bulletinsResource->toJson());
         return $response->withHeader('Content-Type', 'application/json');
     }
 
-    public static function show(ServerRequestInterface $request, $params): ResponseInterface
+    public function show(ServerRequestInterface $request, $params): ResponseInterface
     {
 
     }
 
-    public static function store()
+    public function store()
     {
 
     }
