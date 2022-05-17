@@ -2,6 +2,7 @@
 
 namespace Bodianskii\BulletinService\Resources;
 
+use Bodianskii\BulletinService\Utils\Link;
 use Illuminate\Support\Collection;
 
 class BulletinResourceCollection
@@ -16,19 +17,19 @@ class BulletinResourceCollection
                 'id' => $bulletin->id,
                 'title' => $bulletin->title,
                 'price' => $bulletin->price,
-                'picture' => $bulletin->images->first()->only('path')
+                'picture' => Link::build($bulletin->images->first()->only('path'))
             ])
         ]);
     }
 
-    public function insertMetaData(Collection $meta)
+    public function insertMetaData(Collection $meta): void
     {
         $this->collection->add([
             'meta' => $meta
         ]);
     }
 
-    public function toJson()
+    public function toJson(): string
     {
         return $this->collection->toJson();
     }
