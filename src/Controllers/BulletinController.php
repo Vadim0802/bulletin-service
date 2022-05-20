@@ -14,18 +14,13 @@ class BulletinController
 {
     public function index(ServerRequestInterface $request): ResponseInterface
     {
-        $defaultQueryParams = [
-            'page' => 1,
+        /** @var integer|null $page */
+        ['page' => $page, 'sort' => $sort] = array_merge([
             'sort' => [
                 'field' => 'id',
                 'direction' => 'asc'
             ]
-        ];
-
-        [
-            'page' => $page,
-            'sort' => $sort
-        ] = array_merge($defaultQueryParams, $request->getQueryParams());
+        ], $request->getQueryParams());
 
         $paginator = new Paginator($page, Bulletin::query()->count());
 
@@ -54,19 +49,11 @@ class BulletinController
         return $response->withHeader('Content-Type', 'application/json');
     }
 
-    public function store(ServerRequestInterface $request)
+    public function store(ServerRequestInterface $request): ResponseInterface
     {
         $response = new Response();
-        $body = $request->getParsedBody();
 
-        if (!(
-            isset($body['description']) &&
-            isset($body['title']) &&
-            isset($body['price']) &&
-            isset($_FILES['images'])) ||
-            (strlen($body['title']) > 200 || strlen($body['description']) > 2000) ||
-            (count($_FILES['images']['name']) > 3)
-        ) {
+        if ($this->validateStoreRequest($request)) {
             $response->getBody()->write(json_encode([
                 'status' => 'failed',
                 'message' => 'Validation failed.',
@@ -74,17 +61,25 @@ class BulletinController
             return $response->withStatus(400);
         }
 
-        $bulletin = Bulletin::query()->create([
-            'title' => $body['title'],
-            'price' => $body['price'],
-            'description' => $body['description'],
+        $bulletin = Bulletin::query()->create(array_merge($request->getParsedBody(), [
             'created_at' => date("Y-m-d H:i:s")
-        ]);
+        ]));
 
         $response->getBody()->write(json_encode([
             'data' => ['id' => $bulletin->id],
             'status' => 'success'
         ]));
+
         return $response->withStatus(201);
+    }
+
+    public function validateStoreRequest(ServerRequestInterface $request): bool
+    {
+        $body = $request->getParsedBody();
+
+        return !(isset($body['description']) && isset($body['title']) &&
+                isset($body['price']) && isset($_FILES['images'])) ||
+                (strlen($body['title']) > 200 || strlen($body['description']) > 2000) ||
+                (count($_FILES['images']['name']) > 3);
     }
 }

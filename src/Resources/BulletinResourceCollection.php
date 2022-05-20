@@ -17,7 +17,7 @@ class BulletinResourceCollection
                 'id' => $bulletin->id,
                 'title' => $bulletin->title,
                 'price' => $bulletin->price,
-                'picture' => Link::build($bulletin->images->first()->only('path'))
+                'picture' => Link::build($bulletin->images->first()->path)
             ])
         ]);
     }

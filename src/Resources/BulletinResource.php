@@ -13,7 +13,7 @@ class BulletinResource
         $this->resource = [
             'id' => $bulletin->id,
             'price' => $bulletin->price,
-            'picture' => $bulletin->images->first()->only('path'),
+            'picture' => Link::build($bulletin->images->first()->path),
         ];
 
         if (in_array('images', $optionalFields)) {

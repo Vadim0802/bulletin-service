@@ -15,7 +15,7 @@ class Paginator
     {
         $this->perPage = $perPage;
         $this->totalCount = $totalCount;
-        $this->currentPage = $page ?? 0;
+        $this->currentPage = $page ?? 1;
     }
 
     public function paginate(Builder $query): Collection
