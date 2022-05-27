@@ -3,8 +3,10 @@
 namespace Bodianskii\BulletinService\Controllers;
 
 use Bodianskii\BulletinService\Models\Bulletin;
+use Bodianskii\BulletinService\Models\Image;
 use Bodianskii\BulletinService\Resources\BulletinResource;
 use Bodianskii\BulletinService\Resources\BulletinResourceCollection;
+use Bodianskii\BulletinService\Services\UploadImageService;
 use Bodianskii\BulletinService\Utils\Paginator;
 use Laminas\Diactoros\Response;
 use Psr\Http\Message\ResponseInterface;
@@ -12,6 +14,13 @@ use Psr\Http\Message\ServerRequestInterface;
 
 class BulletinController
 {
+    private UploadImageService $uploadImageService;
+
+    public function __construct()
+    {
+        $this->uploadImageService = new UploadImageService();
+    }
+
     public function index(ServerRequestInterface $request): ResponseInterface
     {
         /** @var integer|null $page */
@@ -22,13 +31,18 @@ class BulletinController
             ]
         ], $request->getQueryParams());
 
+        $response = new Response();
         $paginator = new Paginator($page, Bulletin::query()->count());
 
-        $bulletins = Bulletin::query()->orderBy($sort['field'], $sort['direction']);
-        $bulletinsResource = new BulletinResourceCollection($paginator->paginate($bulletins));
+        $bulletins = $paginator->paginate(Bulletin::query()->orderBy($sort['field'], $sort['direction']));
+
+        if ($bulletins->isEmpty()) {
+            return $response->withStatus(404);
+        }
+
+        $bulletinsResource = new BulletinResourceCollection($bulletins);
         $bulletinsResource->insertMetaData($paginator->meta());
 
-        $response = new Response();
         $response->getBody()->write($bulletinsResource->toJson());
         return $response->withHeader('Content-Type', 'application/json');
     }
@@ -53,7 +67,7 @@ class BulletinController
     {
         $response = new Response();
 
-        if ($this->validateStoreRequest($request)) {
+        if (! $this->validateStoreRequest($request)) {
             $response->getBody()->write(json_encode([
                 'status' => 'failed',
                 'message' => 'Validation failed.',
@@ -64,6 +78,8 @@ class BulletinController
         $bulletin = Bulletin::query()->create(array_merge($request->getParsedBody(), [
             'created_at' => date("Y-m-d H:i:s")
         ]));
+
+        $this->uploadImageService->store($bulletin, $_FILES['images']['tmp_name']);
 
         $response->getBody()->write(json_encode([
             'data' => ['id' => $bulletin->id],
@@ -77,9 +93,13 @@ class BulletinController
     {
         $body = $request->getParsedBody();
 
-        return !(isset($body['description']) && isset($body['title']) &&
-                isset($body['price']) && isset($_FILES['images'])) ||
-                (strlen($body['title']) > 200 || strlen($body['description']) > 2000) ||
-                (count($_FILES['images']['name']) > 3);
+        $validateAllFieldsExist = isset($body['description']) && isset($body['title']) &&
+            isset($body['price']) && isset($_FILES['images']);
+
+        $validateLengthOfFields = strlen($body['title']) <= 200 && strlen($body['description']) <= 2000;
+        $validateCountOfImages = count($_FILES['images']['name'] ?? []) <= 3;
+        $validateFilesExtension = $this->uploadImageService->validate($_FILES['images']['tmp_name']);
+
+        return $validateAllFieldsExist && $validateLengthOfFields && $validateCountOfImages && $validateFilesExtension;
     }
 }

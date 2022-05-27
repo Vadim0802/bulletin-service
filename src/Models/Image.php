@@ -8,7 +8,7 @@ class Image extends Model
 {
     public $timestamps = false;
 
-    protected $fillable = ['path'];
+    protected $fillable = ['path', 'created_at'];
     protected $guarded = ['bulletin_id'];
 
     protected $casts = ['created_at' => 'datetime'];

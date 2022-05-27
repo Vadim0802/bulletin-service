@@ -17,7 +17,9 @@ class BulletinResource
         ];
 
         if (in_array('images', $optionalFields)) {
-            $this->resource['images'] = $bulletin->images->map(fn ($image) => Link::build($image->path));
+            $this->resource['images'] = $bulletin->images
+                ->map(fn ($image) => Link::build($image->path))
+                ->filter(fn ($imageLink) => $imageLink !== $this->resource['picture'])->values();
         }
 
         if (in_array('description', $optionalFields)) {

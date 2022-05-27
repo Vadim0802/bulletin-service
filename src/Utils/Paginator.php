@@ -10,12 +10,14 @@ class Paginator
     private int $perPage;
     private int $totalCount;
     private int $currentPage;
+    private int $lastPage;
 
     public function __construct(?int $page, int $totalCount, int $perPage = 10)
     {
         $this->perPage = $perPage;
         $this->totalCount = $totalCount;
         $this->currentPage = $page ?? 1;
+        $this->lastPage = ceil($totalCount / $perPage);
     }
 
     public function paginate(Builder $query): Collection
@@ -26,13 +28,11 @@ class Paginator
 
     public function meta(): Collection
     {
-        $hasNext = $this->hasNextPage();
-        $hasPrev = $this->hasPreviousPage();
-
         return collect([
             'page' => $this->currentPage,
-            'next' => $hasNext ? $this->currentPage + 1 : null,
-            'prev' => $hasPrev ? $this->currentPage - 1 : null
+            'last' => $this->lastPage,
+            'next' => $this->hasNextPage() ? $this->currentPage + 1 : null,
+            'prev' => $this->hasPreviousPage() ? $this->currentPage - 1 : null
         ]);
     }
 
@@ -44,6 +44,6 @@ class Paginator
 
     private function hasPreviousPage()
     {
-        return $this->currentPage !== 1;
+        return $this->currentPage > 1;
     }
 }
