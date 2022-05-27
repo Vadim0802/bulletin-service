@@ -16,6 +16,10 @@ class UploadImageService
     {
         $root = __DIR__ . '/../../';
 
+        if (! file_exists($root . '/images')) {
+            mkdir($root . '/public/' . '/images/');
+        }
+
         foreach ($files as $file) {
             $uid = uniqid();
             $relativePath = 'images/' . $uid;
