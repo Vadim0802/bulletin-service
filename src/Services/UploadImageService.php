@@ -16,7 +16,7 @@ class UploadImageService
     {
         $root = __DIR__ . '/../../';
 
-        if (! file_exists($root. '/public/' . '/images')) {
+        if (! file_exists($root . '/public/' . '/images')) {
             mkdir($root . '/public/' . '/images/');
         }
 

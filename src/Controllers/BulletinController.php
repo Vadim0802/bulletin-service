@@ -3,7 +3,6 @@
 namespace Bodianskii\BulletinService\Controllers;
 
 use Bodianskii\BulletinService\Models\Bulletin;
-use Bodianskii\BulletinService\Models\Image;
 use Bodianskii\BulletinService\Resources\BulletinResource;
 use Bodianskii\BulletinService\Resources\BulletinResourceCollection;
 use Bodianskii\BulletinService\Services\UploadImageService;
