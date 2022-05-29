@@ -43,6 +43,7 @@ class UploadImageService
                 return false;
             }
         }
+        finfo_close($finfo);
 
         return true;
     }
